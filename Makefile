@@ -11,7 +11,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/a13519/zopennds.git
-PKG_SOURCE_VERSION:=94e65ee
+#PKG_SOURCE_VERSION:=ceee15949fa9895fa3f9ee9d5ab47cee8a24dab9
 
 #PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 #PKG_SOURCE_URL:=https://codeload.github.com/opennds/opennds/tar.gz/v$(PKG_VERSION)?
