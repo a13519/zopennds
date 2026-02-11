@@ -22,15 +22,15 @@
     @brief Config file parsing
     @author Copyright (C) 2004 Philippe April <papril777@yahoo.com>
     @author Copyright (C) 2007 Paul Kube <nodogsplash@kokoro.ucsd.edu>
-    @author Copyright (C) 2015-2025 Modifications and additions by BlueWave Projects and Services <opennds@blue-wave.net>
+    @author Copyright (C) 2015-2023 Modifications and additions by BlueWave Projects and Services <opennds@blue-wave.net>
 */
 
-#define COPYRIGHT "openNDS, Copyright (C) 2015-2025 Modifications and additions by BlueWave Projects and Services"
+#define COPYRIGHT "openNDS, Copyright (C) 2015-2023 Modifications and additions by BlueWave Projects and Services"
 
 #ifndef _CONF_H_
 #define _CONF_H_
 
-#define VERSION "11.0.0beta"
+#define VERSION "10.2.0"
 
 /*
  * Defines how many times should we try detecting the interface with the default route (in seconds).
@@ -62,18 +62,17 @@
 #define DEFAULT_STATUSPATH "/usr/lib/opennds/client_params.sh"
 #define DEFAULT_LOG_MOUNTPOINT "/tmp"
 #define DEFAULT_MAX_PAGE_SIZE "10240"
-#define DEFAULT_FASPORT "443"
-#define DEFAULT_LOGIN_OPTION_ENABLED "1"
+#define DEFAULT_FASPORT "0"
+#define DEFAULT_LOGIN_OPTION_ENABLED "0"
 #define DEFAULT_MAX_LOG_ENTRIES "100"
 #define DEFAULT_USE_OUTDATED_MHD "0"
 #define DEFAULT_ALLOW_PREEMPTIVE_AUTHENTICATION "1"
 #define DEFAULT_FAS_SECURE_ENABLED "1"
 #define DEFAULT_FASPATH "/"
-#define DEFAULT_FASKEY ""
+#define DEFAULT_FASKEY "1234567890"
 #define DEFAULT_BINAUTH "/usr/lib/opennds/binauth_log.sh"
-#define DEFAULT_CUSTOMBINAUTH "/usr/lib/opennds/custombinauth.sh"
 #define DEFAULT_CHECKINTERVAL "15"
-#define DEFAULT_SESSIONTIMEOUT "1440"
+#define DEFAULT_SESSION_TIMEOUT "1440"
 #define DEFAULT_PREAUTH_IDLE_TIMEOUT "30"
 #define DEFAULT_AUTH_IDLE_TIMEOUT "120"
 #define DEFAULT_REMOTES_REFRESH_INTERVAL "0"
@@ -104,8 +103,24 @@
 #define DEFAULT_FW_MARK_TRUSTED "0x20000"
 #define DEFAULT_THEMESPEC_PATH ""
 #define DEFAULT_FAS_REMOTEFQDN "disabled"
-#define DEFAULT_FAS_REMOTEIP "disabled"
+#define DEFAULT_FAS_REMOTEIP ""
 #define DEFAULT_FAS_SSL "wget"
+
+/*
+ * Zousys changes to add:
+ * FAS_AUTH_FQDN, FAS_AUTH_IP, FAS_AUTH_PORT, FAS_AUTH_PATH
+ * FAS_AUTHMON_FQDN, FAS_AUTHMON_IP, FAS_AUTHMON_PORT, FAS_AUTHMON_PATH
+ */
+#define DEFAULT_FAS_AUTH_FQDN "disabled"
+#define DEFAULT_FAS_AUTHMON_FQDN "disabled"
+#define DEFAULT_FAS_AUTH_IP ""
+#define DEFAULT_FAS_AUTHMON_IP ""
+#define DEFAULT_FAS_AUTH_PORT "0"
+#define DEFAULT_FAS_AUTHMON_PORT "0"
+#define DEFAULT_FAS_AUTH_PATH "/"
+#define DEFAULT_FAS_AUTHMON_PATH "/"
+#define DEFAULT_FAS_AUTH_INTERVAL "5"
+#define DEFAULT_FAS_AUTHMON_INTERVAL "60"
 
 /* N.B.: default policies here must be ACCEPT, REJECT, or RETURN
  * In the .conf file, they must be allow, block, or passthrough
@@ -121,9 +136,6 @@
 // Default lists
 #define DEFAULT_TRUSTEDMACLIST ""
 #define DEFAULT_FAS_CUSTOM_PARAMETERS_LIST ""
-#define DEFAULT_FAS_CUSTOM_VARIABLES_LIST ""
-#define DEFAULT_FAS_CUSTOM_IMAGES_LIST ""
-#define DEFAULT_FAS_CUSTOM_FILES_LIST ""
 #define DEFAULT_USERS_TO_ROUTER "allow%20udp%20port%2053 allow%20udp%20port%2067 allow%20tcp%20port%2022 allow%20tcp%20port%20443"
 #define DEFAULT_AUTHENTICATED_USERS "allow%20all"
 #define DEFAULT_PREAUTHENTICATED_USERS ""
@@ -214,18 +226,18 @@ typedef struct {
 	char *status_path;					//@brief Path to the client status page script
 	int dhcp_default_url_enable;				//@brief Enable DHCP default-url (code 114 - RFC8910)
 	unsigned int gw_port;					//@brief Port the webserver will run on
-	unsigned int fas_port;					//@brief Port the fas server will run on
+	// unsigned int fas_port;					//@brief Port the fas server will run on
 	int login_option_enabled;				//@brief Use default PreAuth Login script
 	unsigned long long int max_log_entries;			//@brief set the maximum number of log entries
 	int use_outdated_mhd;					//@brief Use outdated libmicrohttpd
 	unsigned long long int max_page_size;			//@brief Max page size to be served by libmicrohttpd
 	int allow_preemptive_authentication;			//@brief Allow Preemptive Authentication using the ndsctl utility
 	int fas_secure_enabled;					//@brief Enable Secure FAS
-	char *fas_path;						//@brief Path to forward authentication page of FAS
+	// char *fas_path;						//@brief Path to forward authentication page of FAS
 	char *fas_key;						//@brief AES key for FAS
-	char *fas_remoteip;					//@brief IP addess of a remote FAS
-	char *fas_remotefqdn;					//@brief FQDN of a remote FAS
-	char *fas_url;						//@brief URL of a remote FAS
+	// char *fas_remoteip;					//@brief IP addess of a remote FAS
+	// char *fas_remotefqdn;					//@brief FQDN of a remote FAS
+	// char *fas_url;						//@brief URL of a remote FAS
 	char *fas_ssl;						//@brief SSL provider for FAS
 	char *fas_hid;						//@brief Hash provider for FAS
 	char *themespec_path;					//@brief Path to the ThemeSpec file to use for login_option_enabled = 3
@@ -235,7 +247,7 @@ typedef struct {
 	char *authdir;						//@brief Notional relative dir for authentication URL
 	char *denydir;						//@brief Notional relative dir for denial URL
 	char *preauthdir;					//@brief Notional relative dir for preauth URL
-	int sessiontimeout;					//@brief Minutes of the default session length
+	int session_timeout;					//@brief Minutes of the default session length
 	int preauth_idle_timeout;				//@brief Minutes a preauthenticated client will be kept in the system
 	int auth_idle_timeout;					//@brief Minutes an authenticated client will be kept in the system
 	int remotes_refresh_interval;				//@brief Minutes before remote files will be refreshed
@@ -273,9 +285,23 @@ typedef struct {
 	unsigned int fw_mark_trusted;				//@brief nftables mark for trusted packets
 	int ip6;						//@brief enable IPv6
 	char *binauth;						//@brief external postauthentication program
-	char *custombinauth;					//@brief external custom postauthentication program
 	char *preauth;						//@brief external preauthentication program
 	int lockfd;						//@brief ndsctl lockfile file descriptor
+	/*
+	 * ZopenNDS FAS config
+	 */
+	char *fas_auth_path;						//@brief Path to forward authentication page of FAS
+	char *fas_auth_ip;					//@brief IP addess of a remote FAS
+	char *fas_auth_fqdn;					//@brief FQDN of a remote FAS
+	unsigned int fas_auth_port;
+	char *fas_auth_url;						//@brief URL of a remote FAS
+	char *fas_authmon_path;						//@brief Path to forward authentication page of FAS
+	char *fas_authmon_ip;					//@brief IP addess of a remote FAS
+	char *fas_authmon_fqdn;					//@brief FQDN of a remote FAS
+	unsigned int fas_authmon_port;
+	char *fas_authmon_url;						//@brief URL of a remote FAS
+	int fas_auth_interval;
+	int fas_authmon_interval;
 } s_config;
 
 // @brief Get the current gateway configuration
