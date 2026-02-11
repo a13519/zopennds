@@ -70,7 +70,7 @@ config_get_config(void)
 
 char *set_list_str(char *list, const char *default_list, char *debug_level)
 {
-	char msg[MID_BUF];
+	char msgst[MID_BUF];
 	char debuglevel[STATUS_BUF];
 
 	memset(msg, 0, MID_BUF);
