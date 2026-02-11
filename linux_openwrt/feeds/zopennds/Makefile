@@ -7,16 +7,14 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zopennds
 PKG_VERSION:=1.1.10
-PKG_RELEASE:=
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/a13519/zopennds.git
-PKG_SOURCE_VERSION:=94e65ee
+PKG_SOURCE_VERSION:=5d27b906
+PKG_MIRROR_HASH:=skip
 
-#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-#PKG_SOURCE_URL:=https://codeload.github.com/opennds/opennds/tar.gz/v$(PKG_VERSION)?
-#PKG_HASH:=#shasum -a 256 of tar.gz of source files goes here
-PKG_BUILD_DIR:=$(BUILD_DIR)/zopenNDS-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/zopennds-$(PKG_VERSION)
 
 PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1

@@ -16,3 +16,11 @@ src-link zopennds /mnt/shared/UTMShare/zopennds_feed
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a -p zopennds
+
+make package/zopennds/download V=s
+make package/zopennds/compile V=s
+
+
+clean:
+
+rm -rf build_dir/target-aarch64_cortex-a53_musl/zopennds*
