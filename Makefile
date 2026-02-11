@@ -1,87 +1,82 @@
-#
-# This is free software, licensed under the GNU General Public License v2.
-# See /LICENSE for more information.
-#
 
-include $(TOPDIR)/rules.mk
+CC?=gcc
+CFLAGS?=-O2 -g -Wall
+CFLAGS+=-Isrc
+#CFLAGS+=-Wall -Wwrite-strings -pedantic -std=gnu99
+LDFLAGS+=-pthread
+LDLIBS=-lmicrohttpd
 
-PKG_NAME:=zopennds
-PKG_VERSION:=1.1.10
-PKG_RELEASE:=1
+STRIP=yes
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/a13519/zopennds.git
-PKG_SOURCE_VERSION:=94e65ee
+NDS_OBJS=src/auth.o src/client_list.o src/commandline.o src/conf.o \
+	src/debug.o src/fw_iptables.o src/main.o src/http_microhttpd.o src/http_microhttpd_utils.o \
+	src/ndsctl_thread.o src/safe.o src/util.o
 
-#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-#PKG_SOURCE_URL:=https://codeload.github.com/opennds/opennds/tar.gz/v$(PKG_VERSION)?
-#PKG_HASH:=#shasum -a 256 of tar.gz of source files goes here
-PKG_BUILD_DIR:=$(BUILD_DIR)/zopenNDS-$(PKG_VERSION)
+.PHONY: all clean install
 
-PKG_FIXUP:=autoreconf
-PKG_BUILD_PARALLEL:=1
+all: opennds ndsctl
 
-include $(INCLUDE_DIR)/package.mk
+%.o : %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-define Package/zopennds
-  SUBMENU:=Captive Portals
-  SECTION:=net
-  CATEGORY:=Network
-  DEPENDS:=+libmicrohttpd-no-ssl
-  TITLE:=Zousys open Network Demarcation Service
-endef
+opennds: $(NDS_OBJS) $(LIBHTTPD_OBJS)
+	$(CC) $(LDFLAGS) -o opennds $+ $(LDLIBS)
 
-define Package/zopennds/description
-  zopenNDS (open Network Demarcation Service) is a high performance, small footprint, Captive Portal.
-  It provides a border control gateway between a public local area network and the Internet.
-  It supports all scenarios ranging from small stand alone venues through to large mesh networks with multiple portal entry points.
-  Both the client driven Captive Portal Detection method (CPD) and gateway driven Captive Portal Identification method (CPI - RFC 8910 and RFC 8908) are supported.
-  This version uses nftables.
-endef
+ndsctl: src/ndsctl.o
+	$(CC) $(LDFLAGS) -o ndsctl $+ $(LDLIBS)
 
-define Package/zopennds/install
-	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/opennds $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ndsctl $(1)/usr/bin/
-	$(INSTALL_DIR) $(1)/etc/opennds/htdocs/images
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_DIR) $(1)/usr/lib/opennds
-	$(CP) $(PKG_BUILD_DIR)/resources/splash.css $(1)/etc/opennds/htdocs/
-	$(CP) $(PKG_BUILD_DIR)/resources/splash.jpg $(1)/etc/opennds/htdocs/images/
-	$(CP) $(PKG_BUILD_DIR)/linux_openwrt/opennds/files/etc/config/opennds $(1)/etc/config/
-	$(CP) $(PKG_BUILD_DIR)/linux_openwrt/opennds/files/etc/config/opennds $(1)/etc/opennds/config.uci
-	$(CP) $(PKG_BUILD_DIR)/linux_openwrt/opennds/files/etc/init.d/opennds $(1)/etc/init.d/
-	$(CP) $(PKG_BUILD_DIR)/linux_openwrt/opennds/files/etc/uci-defaults/40_opennds $(1)/etc/uci-defaults/
-	$(CP) $(PKG_BUILD_DIR)/linux_openwrt/opennds/files/usr/lib/opennds/restart.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/binauth/binauth_log.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/binauth/custombinauth.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/libopennds.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/PreAuth/theme_click-to-continue-basic.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/PreAuth/theme_click-to-continue-custom-placeholders.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/PreAuth/theme_user-email-login-basic.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/PreAuth/theme_user-email-login-custom-placeholders.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/get_client_interface.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/client_params.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/authmon.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/dnsconfig.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/download_resources.sh $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/libs/post-request.php $(1)/usr/lib/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/fas-aes/fas-aes.php $(1)/etc/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/fas-hid/fas-hid.php $(1)/etc/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/fas-hid/fas-hid-https.php $(1)/etc/opennds/
-	$(CP) $(PKG_BUILD_DIR)/forward_authentication_service/fas-aes/fas-aes-https.php $(1)/etc/opennds/
-endef
+clean:
+	rm -f opennds ndsctl src/*.o
+	rm -rf dist
 
-define Package/zopennds/postrm
-#!/bin/sh
-uci delete firewall.opennds
-uci commit firewall
-endef
+install:
+#ifeq(yes,$(STRIP))
+	strip opennds
+	strip ndsctl
+#endif
+	mkdir -p $(DESTDIR)/usr/bin/
+	cp ndsctl $(DESTDIR)/usr/bin/
+	cp opennds $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)/etc/opennds/htdocs/images
+	mkdir -p $(DESTDIR)/etc/config
+	if [ -e $(DESTDIR)/etc/config/opennds ]; then \
+		cp linux_openwrt/opennds/files/etc/config/opennds $(DESTDIR)/etc/config/opennds.default; \
+	else\
+		cp linux_openwrt/opennds/files/etc/config/opennds $(DESTDIR)/etc/config/; \
+	fi
+	cp resources/splash.css $(DESTDIR)/etc/opennds/htdocs/
+	cp resources/splash.jpg $(DESTDIR)/etc/opennds/htdocs/images/
+	mkdir -p $(DESTDIR)/etc/systemd/system
+	cp resources/opennds.service $(DESTDIR)/etc/systemd/system/
+	mkdir -p $(DESTDIR)/usr/lib/opennds
+	cp forward_authentication_service/binauth/custombinauth.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/custombinauth.sh
+	cp forward_authentication_service/binauth/binauth_log.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/binauth_log.sh
+	cp forward_authentication_service/libs/libopennds.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i '0,/#!\/bin\/sh/{s/#!\/bin\/sh/#!\/bin\/bash/}' $(DESTDIR)/usr/lib/opennds/libopennds.sh
+	cp forward_authentication_service/PreAuth/theme_click-to-continue-basic.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/theme_click-to-continue-basic.sh
+	cp forward_authentication_service/PreAuth/theme_click-to-continue-custom-placeholders.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/theme_click-to-continue-custom-placeholders.sh
+	cp forward_authentication_service/PreAuth/theme_user-email-login-basic.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/theme_user-email-login-basic.sh
+	cp forward_authentication_service/PreAuth/theme_user-email-login-custom-placeholders.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/theme_user-email-login-custom-placeholders.sh
+	cp forward_authentication_service/libs/get_client_interface.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/get_client_interface.sh
+	cp forward_authentication_service/libs/client_params.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/client_params.sh
+	cp forward_authentication_service/libs/authmon.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/authmon.sh
+	cp forward_authentication_service/libs/dnsconfig.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/dnsconfig.sh
+	cp forward_authentication_service/libs/download_resources.sh $(DESTDIR)/usr/lib/opennds/
+	sed -i 's/#!\/bin\/sh/#!\/bin\/bash/' $(DESTDIR)/usr/lib/opennds/download_resources.sh
+	cp forward_authentication_service/libs/post-request.php $(DESTDIR)/usr/lib/opennds/
+	cp forward_authentication_service/fas-aes/fas-aes.php $(DESTDIR)/etc/opennds/
+	cp forward_authentication_service/fas-hid/fas-hid.php $(DESTDIR)/etc/opennds/
+	cp forward_authentication_service/fas-hid/fas-hid-https.php $(DESTDIR)/etc/opennds/
+	cp forward_authentication_service/fas-aes/fas-aes-https.php $(DESTDIR)/etc/opennds/
 
-define Package/zopennds/conffiles
-/etc/config/opennds
-endef
 
-$(eval $(call BuildPackage,zopennds))

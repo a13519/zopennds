@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zopennds
 PKG_VERSION:=1.1.10
-PKG_RELEASE:=1
+PKG_RELEASE:=
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/a13519/zopennds.git
